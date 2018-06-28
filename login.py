@@ -45,7 +45,7 @@ class JLogin:
 		comando = Info.comando_login + " " + self.entradaEmail.get() + " " + self.entradaSenha.get()
 		
 		send_toServer(comando)
-		mensagem,endereco = receber_mensagem(Info.serverPort)	
+		mensagem,endereco = receber_mensagem()	
 		
 		if(mensagem == Info.erro_em):
 			self.lblResultado["text"] = "Email não cadastrado"
@@ -74,8 +74,10 @@ class JLogin:
 		
 		comando = Info.comando_signin + " " + self.entradaEmail.get() + " " + self.entradaSenha.get()
 		
+		print("comando>",comando)
+		
 		send_toServer(comando)
-		mensagem,endereco = receber_mensagem(Info.serverPort)
+		mensagem,endereco = receber_mensagem()
 		
 		print(mensagem,endereco)	
 		
@@ -88,6 +90,7 @@ class JLogin:
 			return
 			
 		self.lblResultado["text"] = "Usuário cadastrado"
+		
 		
 		
 janela = Tk()

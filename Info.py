@@ -1,17 +1,18 @@
-#coding:utf-8
+#coding: utf-8
 
 from socket import *
 
 class Info:
+	verifica_on = 0
 	meuEmail = ''
-	serverIp = '192.168.0.105'
-	serverPort = 9119
+	serverIp = '10.3.1.18'
+	serverPort = 54319
 	
-	comando_login = "con"
-	comando_signin = "sin"
+	comando_login = "Con"
+	comando_signin = "Sin"
 	
 	comando_truco = "Truco"
-	comando_cai = "Cai"
+	comando_seis = "Seis"
 	comando_envia = "Envia"
 	
 	""" Respostas """
@@ -21,24 +22,28 @@ class Info:
 	sin_ok = "sin_ok"
 	sin_erro_em = "sin_erro_em"
 	sin_erro = "sin_erro"
+	msg_ok = "ok"
 	
-def send_toServer(mensagem):		
-	clientSocket = socket(AF_INET, SOCK_DGRAM)
-	clientSocket.sendto(mensagem, (Info.serverIp, Info.serverPort))
-	clientSocket.close()
+	receiver_socket = socket(AF_INET, SOCK_DGRAM)
+	receiver_socket.bind(('', serverPort))
 	
-def receber_mensagem(port):
-	serverSocket = socket(AF_INET, SOCK_DGRAM)
-	serverSocket.bind(('', Info.serverPort))
-	message, clientAddress = serverSocket.recvfrom(2048)
-	serverSocket.close()
+	sender_socket = socket(AF_INET, SOCK_DGRAM)
 	
-	return message, clientAddress
+	
+def send_toServer(mensagem):
+	Info.sender_socket.sendto(mensagem.encode("utf-8"), (Info.serverIp, Info.serverPort))
+	
+def receber_mensagem():
+	message, clientAddress = Info.receiver_socket.recvfrom(2048)
+
+	return message.decode("utf-8"), clientAddress
 	
 def send_to(mensagem,ip):
-	clientSocket = socket(AF_INET, SOCK_DGRAM)
-	clientSocket.sendto(mensagem, (ip, Info.serverPort))
-	clientSocket.close()
+	Info.sender_socket.sendto(mensagem, (ip, Info.serverPort))
+
+def close_sockets():
+	Info.receiver_socket.close()
+	Info.sender_socket.close()
 
 def find_in_list(lista,chave):
 	for l in lista:

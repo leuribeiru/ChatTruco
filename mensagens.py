@@ -44,6 +44,7 @@ class JMensagens:
 
 	def acao_btnEnviar(self):
 		mensagem = self.entrada.get()
+		mensagem = mensagem.encode("utf-8")
 		if( mensagem != ""):
 			self.textArea["state"] = NORMAL
 			self.textArea.insert(END,"Você>> "+mensagem+"\n")

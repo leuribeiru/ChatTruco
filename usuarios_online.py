@@ -3,6 +3,9 @@
 from Tkinter import *
 from Info import *
 from mensagens import *
+import os
+
+import time
 
 import threading
 
@@ -30,6 +33,8 @@ class JUsuarios:
 		
 		self.thReceber = threading.Thread(target=self.loop_receber,args=())
 		self.thReceber.start()
+		self.thVerifica_on = threading.Thread(target=self.loop_verifica_on,args=())
+		self.thVerifica_on.start()
 		
 		root.geometry("200x300+200+200")
 		root.mainloop()
@@ -42,7 +47,6 @@ class JUsuarios:
 		novoBotao.pack()
 		
 	def criarJanelaM(self,email,mensagem):
-		
 		if(not self.dicTelas.has_key(email)):
 			novaJanela = Tk()
 			novaJM = JMensagens(novaJanela,email,self)
@@ -92,8 +96,9 @@ class JUsuarios:
 	def loop_receber(self):
 		while True:
 			print("guiRecebendoTudo")
-			mensagem, endereco = receber_mensagem(Info.serverPort)
-			self.decodificar(mensagem,endereco)
+			mensagem, endereco = receber_mensagem()
+			thExecutora = threading.Thread(target=lambda: self.decodificar(mensagem,endereco), args=())
+			thExecutora.start()
 			
 	def decodificar(self,mensagem,endereco):
 		if(len(mensagem.split()) >= 2):
@@ -103,6 +108,8 @@ class JUsuarios:
 				self.func_cair()
 				self.remover_offlines(mensagem.split()[1].split("#"))
 				self.adicionar_novos_onlines(mensagem.split()[1].split("#"))
+				Info.verifica_on+=1
+				print("VERIFICA ON",Info.verifica_on)
 			if(comando == Info.comando_envia):
 				dest = mensagem.split()[1]
 				rem = mensagem.split()[2]
@@ -114,18 +121,30 @@ class JUsuarios:
 					self.criarJanelaM(rem,mensagem.split('#m#')[1])
 					
 					
+	def loop_verifica_on(self):
+		while True:
+			time.sleep(5)
+			if(Info.verifica_on>0):
+				Info.verifica_on=0
+			else:
+				
+				os._exit(0)
+				
+				
 				
 				
 	def func_cair(self):
-		comando = Info.comando_cai + " " + Info.meuEmail
+		comando = Info.comando_seis + " " + Info.meuEmail
 		send_toServer(comando)
 		print(comando)
 		
 	def func_enviar_mensagem(self,mensagem,email):
+		mensagem = mensagem.decode("utf-8")
 		for user in self.listaUsuarios:
 			emailU = user.split(":")[0]
 			if(emailU == email):
 				msg = Info.comando_envia + " " + email + " " +Info.meuEmail + " #m#" + mensagem
+				msg = msg.encode("utf-8")
 				send_to(msg,user.split(":")[1])
 
 		
