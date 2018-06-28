@@ -4,30 +4,11 @@
 import threading
 import time
 from socket import *
-
-serverPort = 9119
+from Info import *
 
 """ Nomes arquivos """
 file_client_logins = "logins.cli"
 file_client_on = "onlines.cli"
-
-"""Comandos"""
-cmd_truco = "Truco"
-cmd_cai = "Cai"
-
-""" Respostas """
-rst_ok = "ok"
-rst_erro_pw = "erro_pw"
-rst_erro_em = "erro_em"
-rst_erro = "erro"
-rst_sin_ok = "sin_ok"
-rst_sin_h = "sin_h"
-rst_sin_erro_em = "sin_erro_em"
-rst_sin_erro = "sin_erro"
-
-""" Perguntas """
-pgt_con = "con"
-pgt_sin = "sin"
 
 """ Registro de trucos"""
 reg_truco = []
@@ -41,11 +22,11 @@ def func_pgt_con(mensagem,address):
 		senha = getSenha(mensagem)
 		
 		if(verificarEmail(email) == -1):
-			responder(rst_erro_em,address)
+			responder(Info.erro_em,address)
 			return
 		
 		if( not verificarEmailSenha(email,senha) ):	
-			responder(rst_erro_pw,address)
+			responder(Info.erro_pw,address)
 			return
 			
 		posi = verificarOnline(email)
@@ -63,7 +44,7 @@ def func_pgt_con(mensagem,address):
 		
 		responder(onsToString(obterListaOn()), address)
 	else:
-		responder(rst_erro, address)
+		responder(Info.erro, address)
 
 """ Funcionalidade da pergunta sin """	
 def func_pgt_sin(mensagem,address):
@@ -75,14 +56,14 @@ def func_pgt_sin(mensagem,address):
 		
 		if(verificarEmail(email) == -1): #se não encontrar o email no arquivo o cliente é cadastrado
 			salvarLogin(email,senha)
-			responder(rst_sin_ok,address)
+			responder(Info.sin_ok,address)
 		else: # se encontrar o email retorna o erro ao cliente
-			responder(rst_sin_erro_em,address)
+			responder(Info.sin_erro_em,address)
 		
 	else:
-		responder(rst_sin_erro,address)
+		responder(Info.sin_erro,address)
 
-""" Funcionalidade do comando cai """	
+""" Funcionalidade do comando seis """	
 def func_cmd_cai(mensagem,address):
 	global qtd_truco
 	if( len(mensagem.split()) == 2):
@@ -109,7 +90,7 @@ def func_cmd_truco():
 	for usuario in lista:
 		ip = obterIpOnline(usuario)
 		email = obterEmailOnline(usuario)
-		responder(cmd_truco + " " + onsToString(lista),[ip, serverPort]) #envia um truco para o cliente
+		responder(Info.comando_truco + " " + onsToString(lista),[ip, Info.serverPort]) #envia um truco para o cliente
 		posicao = encontrarTrucado(email) #guarda a posição 
 		if( posicao == -1): # se não encontrar na lista de trucado adiciona o registro com 1 ocorrencia de trucado
 			reg_truco.append(email)
@@ -124,33 +105,30 @@ def func_cmd_truco():
 
 """ Decodifica as mensagens recebidas """
 def decodificarMsg(mensagem,address):
-	if(mensagem[:3] == pgt_con):
+	if(mensagem[:3] == Info.comando_login):
 		return func_pgt_con(mensagem,address)
 		
-	if (mensagem[:3] == pgt_sin):
+	if (mensagem[:3] == Info.comando_signin):
 		return func_pgt_sin(mensagem,address)
 		
-	if (mensagem[:3] == cmd_cai):
+	if (mensagem[:4] == Info.comando_seis):
 		return func_cmd_cai(mensagem,address)
 		
 """ Loop para receber mensagens """
 def loopReceber():
-	while True:
-		serverSocket = socket(AF_INET, SOCK_DGRAM)
-		serverSocket.bind(('', serverPort))
-		message, clientAddress = serverSocket.recvfrom(2048)
-		if(message != ""):
-			thExecutora = threading.Thread(target=decodificarMsg, args=(message,clientAddress))
-			thExecutora.start()
-		
-		serverSocket.close()
+	try:
+		while True:
+			message, clientAddress = receber_mensagem()
+			if(message != ""):
+				thExecutora = threading.Thread(target=decodificarMsg, args=(message,clientAddress))
+				thExecutora.start()
+	except Exception:
+		print("Falha ao receber")
 
 """ Responder uma mensagem a um endereço """
 def responder(mensagem, address):
 	try:
-		clientSocket = socket(AF_INET, SOCK_DGRAM)
-		clientSocket.sendto(mensagem, (address[0],serverPort))
-		clientSocket.close()
+		send_to(mensagem, address[0])
 	except Exception:
 		print("ClienteNaoEncontrado")
 		
@@ -355,7 +333,7 @@ def eliminarDesconectados():
 def func_thread_trucar():
 	while True:
 		func_cmd_truco()
-		time.sleep(9)
+		time.sleep(Info.tempo_servidor)
 
 """ Inicio do Servidor """		
 def main():

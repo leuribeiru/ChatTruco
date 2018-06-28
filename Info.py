@@ -4,6 +4,8 @@ from socket import *
 
 class Info:
 	verifica_on = 0
+	tempo_servidor = 1
+	
 	meuEmail = ''
 	serverIp = '10.3.1.18'
 	serverPort = 54319
@@ -31,12 +33,12 @@ class Info:
 	
 	
 def send_toServer(mensagem):
-	Info.sender_socket.sendto(mensagem.encode("utf-8"), (Info.serverIp, Info.serverPort))
+	Info.sender_socket.sendto(mensagem, (Info.serverIp, Info.serverPort))
 	
 def receber_mensagem():
 	message, clientAddress = Info.receiver_socket.recvfrom(2048)
 
-	return message.decode("utf-8"), clientAddress
+	return message, clientAddress
 	
 def send_to(mensagem,ip):
 	Info.sender_socket.sendto(mensagem, (ip, Info.serverPort))

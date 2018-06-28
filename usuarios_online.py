@@ -51,7 +51,6 @@ class JUsuarios:
 			novaJanela = Tk()
 			novaJM = JMensagens(novaJanela,email,self)
 			self.dicTelas[email] = novaJM
-			print(self.dicTelas)
 			self.dicTelas[email].receber_mensagem(mensagem)
 			novaJM.start()
 		
@@ -61,7 +60,6 @@ class JUsuarios:
 			if(user != ""):
 				user = self.listaUsuarios[j]
 				btn  = self.listaBotoes[j]
-				print("Verificando off",user,btn["text"])
 				if( not find_in_list(novaLista,user) ):
 					print("Usuario desconectado",user,btn)
 					email = btn["text"]
@@ -80,7 +78,6 @@ class JUsuarios:
 	def adicionar_novos_onlines(self,novaLista):
 		for user in novaLista:
 			if(user != ""):
-				print("Verificando on",user)
 				if( not find_in_list(self.listaUsuarios,user) ):
 					print("Usuario conectado",user)
 					email = user.split(":")[0]
@@ -95,7 +92,7 @@ class JUsuarios:
 		
 	def loop_receber(self):
 		while True:
-			print("guiRecebendoTudo")
+			print("guiNutelaRecebendoTudo")
 			mensagem, endereco = receber_mensagem()
 			thExecutora = threading.Thread(target=lambda: self.decodificar(mensagem,endereco), args=())
 			thExecutora.start()
@@ -109,7 +106,6 @@ class JUsuarios:
 				self.remover_offlines(mensagem.split()[1].split("#"))
 				self.adicionar_novos_onlines(mensagem.split()[1].split("#"))
 				Info.verifica_on+=1
-				print("VERIFICA ON",Info.verifica_on)
 			if(comando == Info.comando_envia):
 				dest = mensagem.split()[1]
 				rem = mensagem.split()[2]
@@ -123,28 +119,21 @@ class JUsuarios:
 					
 	def loop_verifica_on(self):
 		while True:
-			time.sleep(5)
+			time.sleep(Info.tempo_servidor*4)
 			if(Info.verifica_on>0):
 				Info.verifica_on=0
 			else:
-				
 				os._exit(0)
-				
-				
-				
 				
 	def func_cair(self):
 		comando = Info.comando_seis + " " + Info.meuEmail
 		send_toServer(comando)
-		print(comando)
 		
 	def func_enviar_mensagem(self,mensagem,email):
-		mensagem = mensagem.decode("utf-8")
 		for user in self.listaUsuarios:
 			emailU = user.split(":")[0]
 			if(emailU == email):
 				msg = Info.comando_envia + " " + email + " " +Info.meuEmail + " #m#" + mensagem
-				msg = msg.encode("utf-8")
 				send_to(msg,user.split(":")[1])
 
 		

@@ -44,9 +44,9 @@ class JMensagens:
 
 	def acao_btnEnviar(self):
 		mensagem = self.entrada.get()
-		mensagem = mensagem.encode("utf-8")
 		if( mensagem != ""):
 			self.textArea["state"] = NORMAL
+			mensagem = mensagem.encode("utf-8")
 			self.textArea.insert(END,"Você>> "+mensagem+"\n")
 			self.textArea["state"] = DISABLED
 			self.entrada.delete(0,END)
@@ -55,6 +55,7 @@ class JMensagens:
 	def receber_mensagem(self,mensagem):
 		if( mensagem == ""):
 			return
+		mensagem = mensagem.decode("utf-8")
 		self.textArea["state"] = NORMAL
 		self.textArea.insert(END,self.email+"<< "+mensagem+"\n")
 		self.textArea["state"] = DISABLED
